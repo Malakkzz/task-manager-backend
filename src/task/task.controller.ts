@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUserId } from '../auth/get-user.decorator';
 import { TaskService } from './task.service';
@@ -22,11 +32,11 @@ export class TaskController {
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
-    @Body() updateTaskDto: UpdateTaskDto,
-    @GetUserId() userId: number,
+    @Param('id', ParseIntPipe) id: number, //Extracts id from the URL and ensures it's a number.
+    @Body() updateTaskDto: UpdateTaskDto, //Gets the data sent in the request body (like title, description, etc.).
+    @GetUserId() userId: number, //Custom decorator that extracts the currently logged-in user’s ID from the JWT
   ) {
-    return this.taskService.update(+id, updateTaskDto.isCompleted, userId);
+    return this.taskService.update(id, updateTaskDto, userId); //it calls this.taskService.update(...) and passes the task ID, updated data, and user ID to the service layer.
   }
 
   @Delete(':id')

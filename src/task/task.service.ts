@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { Task } from './task.entity';
 import { User } from 'src/auth/user.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TaskService {
@@ -44,34 +45,21 @@ export class TaskService {
     return this.taskRepo.find({ where: { user: { id: userId } } });
   }
 
-  // async update(
-  //   id: number,
-  //   updateTaskDto: Partial<CreateTaskDto>,
-  //   user: User,
-  // ): Promise<Task> {
-  //   //We use Partial<CreateTaskDto> to allow updating only some fields (title, description).
-  //   //Authorization check: ensures the task belongs to the requesting user.
-  //   if (!updateTaskDto || Object.keys(updateTaskDto).length === 0) {
-  //   throw new BadRequestException('No update data provided');
-  // }
-
-  // const task = await this.taskRepo.findOne({
-  //   where: { id, user: { id: user.id } },
-  // });
-  //   if (!task) throw new NotFoundException('Task not found');
-
-  //   Object.assign(task, updateTaskDto);
-  //   return this.taskRepo.save(task);
-  // }
-
-  async update(id: number, isCompleted: boolean, userId: number) {
+  async update(
+    id: number,
+    updateTaskDto: Partial<UpdateTaskDto>, //We use Partial<CreateTaskDto> to allow updating only some fields (title, description)
+    userId: number,
+  ): Promise<Task> {
     const task = await this.taskRepo.findOne({
       where: { id, user: { id: userId } },
     });
 
-    if (!task) throw new NotFoundException('Task not found');
-    task.isCompleted = isCompleted;
-    return this.taskRepo.save(task);
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    Object.assign(task, updateTaskDto); //Merge changes
+    return this.taskRepo.save(task); //Save updated task
   }
 
   // Remove a task owned by the current user
